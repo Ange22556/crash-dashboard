@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crash Dashboard AI</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:18px;
+ background:#061b16;color:white;
+ font-family:Arial,sans-serif
+}
+h1{color:#00f5a0;text-align:center;font-size:23px}
+.sub{text-align:center;color:#91b5a6}
+.card{
+ background:#102c24;padding:18px;
+ border-radius:16px;margin:16px 0;
+ border:1px solid #23634b
+}
+h3{color:#00f5a0}
+.stat{font-size:29px;font-weight:bold}
+input{
+ width:100%;padding:14px;margin:10px 0;
+ background:#061b16;color:white;
+ border:1px solid #287a59;border-radius:9px
+}
+button{
+ padding:12px;border:0;border-radius:9px;
+ background:#00bd7b;color:white;
+ font-weight:bold
+}
+.add{width:100%}
+.item{
+ display:flex;justify-content:space-between;
+ align-items:center;padding:12px 0;
+ border-bottom:1px solid #285044
+}
+.delete{background:#803d3d;padding:8px}
+.bar{
+ height:12px;background:#00e99b;
+ border-radius:10px;margin:7px 0 14px
+}
+.muted{color:#91b5a6;font-size:12px}
+.reset{background:#803d3d;width:100%;margin-top:15px}
+</style>
+</head>
+
+<body>
+<h1>CRASH DASHBOARD AI</h1>
+<p class="sub">Version 2.0 — Analyse des données</p>
+
+<div class="card">
+<h3>STATISTIQUES</h3>
+<p class="muted">Nombre de données</p>
+<div class="stat" id="count">0</div>
+
+<p class="muted">Moyenne historique</p>
+<div class="stat" id="average">0.00x</div>
+
+<p class="muted">Valeur maximale enregistrée</p>
+<div class="stat" id="maximum">0.00x</div>
+</div>
+
+<div class="card">
+<h3>AJOUTER UNE DONNÉE</h3>
+<input id="value" type="number"
+placeholder="Exemple : 2.50" step="0.01">
+<button class="add" onclick="addData()">
++ ENREGISTRER
+</button>
+<p class="muted">
+Données de test uniquement.
+</p>
+</div>
+
+<div class="card">
+<h3>GRAPHIQUE HISTORIQUE</h3>
+<div id="chart"></div>
+</div>
+
+<div class="card">
+<h3>HISTORIQUE</h3>
+<div id="history"></div>
+<button class="reset" onclick="resetData()">
+EFFACER TOUT
+</button>
+</div>
+
+<p class="sub">
+CRASH DASHBOARD AI<br>
+Outil statistique éducatif
+</p>
+
+<script>
+const KEY = "crash_dashboard_history";
+
+let data = [];
+
+try {
+ data = JSON.parse(localStorage.getItem(KEY)) || [];
+ if (!Array.isArray(data)) data = [];
+ data = data.filter(v =>
+   typeof v === "number" &&
+   Number.isFinite(v) && v > 0
+ );
+} catch {
+ data = [];
+}
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+}
+
+function render(){
+ const count = data.length;
+ const avg = count
+   ? data.reduce((a,b)=>a+b,0)/count : 0;
+ const max = count ? Math.max(...data) : 0;
+
+ document.getElementById("count").textContent=count;
+ document.getElementById("average").textContent=
+   avg.toFixed(2)+"x";
+ document.getElementById("maximum").textContent=
+   max.toFixed(2)+"x";
+
+ document.getElementById("chart").innerHTML =
+ data.slice(0,15).map(v=>`
+   <div>${v.toFixed(2)}x</div>
+   <div class="bar"
+     style="width:${Math.min(v/10*100,100)}%">
+   </div>
+ `).join("") || "<p>Aucune donnée</p>";
+
+ document.getElementById("history").innerHTML =
+ data.map((v,i)=>`
+  <div class="item">
+   <span>Résultat ${i+1}</span>
+   <b>${v.toFixed(2)}x</b>
+   <button class="delete"
+    onclick="removeData(${i})">Supprimer</button>
+  </div>
+ `).join("") || "<p>Aucun résultat enregistré.</p>";
+}
+
+function addData(){
+ const input=document.getElementById("value");
+ const v=Number(input.value);
+
+ if(!Number.isFinite(v)||v<=0||v>10000){
+   alert("Entre une valeur positive valide.");
+   return;
+ }
+
+ data.unshift(v);
+ save();
+ input.value="";
+ render();
+}
+
+function removeData(index){
+ data.splice(index,1);
+ save();
+ render();
+}
+
+function resetData(){
+ if(confirm("Effacer toutes les données ?")){
+   data=[];
+   save();
+   render();
+ }
+}
+
+render();
+</script>
+</body>
+</html>
