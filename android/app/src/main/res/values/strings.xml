@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Crash Dashboard</string>
+    <string name="title_activity_main">Crash Dashboard</string>
+    <string name="package_name">com.ange22556.crashdashboard</string>
+    <string name="custom_url_scheme">com.ange22556.crashdashboard</string>
+</resources>
